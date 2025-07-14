@@ -95,21 +95,22 @@ contactForm.addEventListener('submit', async (e) => {
     submitButton.disabled = true;
     
     try {
-        // Send form data (this would typically go to a server endpoint)
-        const response = await sendContactForm(data);
+        // Simulate form processing for static hosting
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        if (response.success) {
-            showNotification('Thank you for your message! We will get back to you soon.', 'success');
-            contactForm.reset();
-            
-            // Track form submission for analytics
-            trackEvent('form_submission', {
-                form_name: 'contact_form',
-                user_industry: data.industry || 'not_specified'
-            });
-        } else {
-            throw new Error(response.message || 'Failed to send message');
-        }
+        // Show success message
+        showNotification('Thank you for your message! We will get back to you soon.', 'success');
+        contactForm.reset();
+        
+        // Track form submission for analytics
+        trackEvent('form_submission', {
+            form_name: 'contact_form',
+            user_industry: data.industry || 'not_specified'
+        });
+        
+        // Log to console for development
+        console.log('Form submission:', data);
+        
     } catch (error) {
         console.error('Form submission error:', error);
         showNotification('Sorry, there was an error sending your message. Please try again.', 'error');
@@ -126,29 +127,9 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-// Function for sending contact form to server
-async function sendContactForm(data) {
-    try {
-        const response = await fetch('/api/contact', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        });
-        
-        const result = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(result.message || 'Failed to send message');
-        }
-        
-        return result;
-    } catch (error) {
-        console.error('Network error:', error);
-        throw error;
-    }
-}
+// Form submission for static hosting
+// Note: This is a static website, so form data is logged to console
+// For production, you might want to integrate with a service like Netlify Forms or Formspree
 
 // Notification system
 function showNotification(message, type = 'info') {

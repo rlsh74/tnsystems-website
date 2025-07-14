@@ -63,6 +63,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+// Initialize EmailJS
+(function(){
+    emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your EmailJS public key
+})();
+
 // Form Validation and Submission
 contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -71,19 +76,20 @@ contactForm.addEventListener('submit', async (e) => {
     const formData = new FormData(contactForm);
     const data = {
         name: formData.get('name'),
-        email: formData.get('email'),
-        company: formData.get('company'),
-        industry: formData.get('industry'),
+        email: formData.get('email') || 'No email provided',
+        company: formData.get('company') || 'Not specified',
+        industry: formData.get('industry') || 'Not specified',
         message: formData.get('message')
     };
     
-    // Basic validation
-    if (!data.name || !data.email || !data.message) {
-        showNotification('Please fill in all required fields.', 'error');
+    // Basic validation (only name and message are required now)
+    if (!data.name || !data.message) {
+        showNotification('Please fill in your name and message.', 'error');
         return;
     }
     
-    if (!isValidEmail(data.email)) {
+    // Validate email only if provided
+    if (data.email && data.email !== 'No email provided' && !isValidEmail(data.email)) {
         showNotification('Please enter a valid email address.', 'error');
         return;
     }
@@ -95,8 +101,21 @@ contactForm.addEventListener('submit', async (e) => {
     submitButton.disabled = true;
     
     try {
-        // Simulate form processing for static hosting
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Send email using EmailJS
+        const response = await emailjs.send(
+            'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
+            'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
+            {
+                from_name: data.name,
+                from_email: data.email,
+                company: data.company,
+                industry: data.industry,
+                message: data.message,
+                to_email: 'tnsystems.ai@gmail.com'
+            }
+        );
+        
+        console.log('Email sent successfully:', response);
         
         // Show success message
         showNotification('Thank you for your message! We will get back to you soon.', 'success');
@@ -107,9 +126,6 @@ contactForm.addEventListener('submit', async (e) => {
             form_name: 'contact_form',
             user_industry: data.industry || 'not_specified'
         });
-        
-        // Log to console for development
-        console.log('Form submission:', data);
         
     } catch (error) {
         console.error('Form submission error:', error);

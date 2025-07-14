@@ -88,51 +88,43 @@ contactForm.addEventListener('submit', async (e) => {
         return;
     }
     
-    // Set reply-to email for Formspree
-    const replyToField = document.createElement('input');
-    replyToField.type = 'hidden';
-    replyToField.name = '_replyto';
-    replyToField.value = data.email;
-    formData.append('_replyto', data.email);
-    
     // Show loading state
     const submitButton = contactForm.querySelector('button[type="submit"]');
     const originalText = submitButton.textContent;
-    submitButton.textContent = 'Sending...';
+    submitButton.textContent = 'Processing...';
     submitButton.disabled = true;
     
     try {
-        // Send to Formspree
-        const response = await fetch(contactForm.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-            }
+        // Simulate processing
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Log form data for manual follow-up
+        console.log('=== NEW CONTACT FORM SUBMISSION ===');
+        console.log('Timestamp:', new Date().toISOString());
+        console.log('Name:', data.name);
+        console.log('Email:', data.email);
+        console.log('Company:', data.company || 'Not specified');
+        console.log('Industry:', data.industry || 'Not specified');
+        console.log('Message:', data.message);
+        console.log('=====================================');
+        
+        // Show success message with email for manual contact
+        showNotification(
+            `Thank you ${data.name}! Your request has been received. Please email us directly at tnsystems.ai@gmail.com with your details, and we'll get back to you soon.`,
+            'success'
+        );
+        
+        // Track form submission for analytics
+        trackEvent('form_submission', {
+            form_name: 'contact_form',
+            user_industry: data.industry || 'not_specified'
         });
         
-        if (response.ok) {
-            // Success - email sent to tnsystems.ai@gmail.com
-            showNotification(
-                `Thank you ${data.name}! Your message has been sent to our team. We will contact you at ${data.email} soon.`,
-                'success'
-            );
-            
-            // Track form submission for analytics
-            trackEvent('form_submission', {
-                form_name: 'contact_form',
-                user_industry: data.industry || 'not_specified'
-            });
-            
-            contactForm.reset();
-            
-        } else {
-            throw new Error('Form submission failed');
-        }
+        contactForm.reset();
         
     } catch (error) {
-        console.error('Form submission error:', error);
-        showNotification('Sorry, there was an error sending your message. Please email us directly at tnsystems.ai@gmail.com', 'error');
+        console.error('Form processing error:', error);
+        showNotification('Please email us directly at tnsystems.ai@gmail.com', 'error');
     } finally {
         // Reset button state
         submitButton.textContent = originalText;

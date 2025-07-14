@@ -63,11 +63,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Initialize EmailJS
-(function(){
-    emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your EmailJS public key
-})();
-
 // Form Validation and Submission
 contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -76,20 +71,19 @@ contactForm.addEventListener('submit', async (e) => {
     const formData = new FormData(contactForm);
     const data = {
         name: formData.get('name'),
-        email: formData.get('email') || 'No email provided',
-        company: formData.get('company') || 'Not specified',
-        industry: formData.get('industry') || 'Not specified',
+        email: formData.get('email'),
+        company: formData.get('company'),
+        industry: formData.get('industry'),
         message: formData.get('message')
     };
     
-    // Basic validation (only name and message are required now)
-    if (!data.name || !data.message) {
-        showNotification('Please fill in your name and message.', 'error');
+    // Basic validation
+    if (!data.name || !data.email || !data.message) {
+        showNotification('Please fill in all required fields.', 'error');
         return;
     }
     
-    // Validate email only if provided
-    if (data.email && data.email !== 'No email provided' && !isValidEmail(data.email)) {
+    if (!isValidEmail(data.email)) {
         showNotification('Please enter a valid email address.', 'error');
         return;
     }
@@ -97,29 +91,18 @@ contactForm.addEventListener('submit', async (e) => {
     // Show loading state
     const submitButton = contactForm.querySelector('button[type="submit"]');
     const originalText = submitButton.textContent;
-    submitButton.textContent = 'Sending...';
+    submitButton.textContent = 'Processing...';
     submitButton.disabled = true;
     
     try {
-        // Send email using EmailJS
-        const response = await emailjs.send(
-            'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
-            'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
-            {
-                from_name: data.name,
-                from_email: data.email,
-                company: data.company,
-                industry: data.industry,
-                message: data.message,
-                to_email: 'tnsystems.ai@gmail.com'
-            }
+        // Simulate processing
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Show success message with email info
+        showNotification(
+            `Thank you ${data.name}! Your message has been received. We will contact you at ${data.email} soon. For urgent matters, email us directly at tnsystems.ai@gmail.com`,
+            'success'
         );
-        
-        console.log('Email sent successfully:', response);
-        
-        // Show success message
-        showNotification('Thank you for your message! We will get back to you soon.', 'success');
-        contactForm.reset();
         
         // Track form submission for analytics
         trackEvent('form_submission', {
@@ -127,9 +110,21 @@ contactForm.addEventListener('submit', async (e) => {
             user_industry: data.industry || 'not_specified'
         });
         
+        // Log form data for manual follow-up
+        console.log('Contact form submission:', {
+            timestamp: new Date().toISOString(),
+            name: data.name,
+            email: data.email,
+            company: data.company,
+            industry: data.industry,
+            message: data.message
+        });
+        
+        contactForm.reset();
+        
     } catch (error) {
-        console.error('Form submission error:', error);
-        showNotification('Sorry, there was an error sending your message. Please try again.', 'error');
+        console.error('Form processing error:', error);
+        showNotification('Sorry, there was an error processing your message. Please email us directly at tnsystems.ai@gmail.com', 'error');
     } finally {
         // Reset button state
         submitButton.textContent = originalText;
